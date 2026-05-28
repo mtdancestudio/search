@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MT DANCE STUDIO | 查詢系統</title>
+    <style>
+        :root {
+            --neon-cyan: #00f0ff;
+            --neon-pink: #ff4081;
+            --bg-dark: #0a192f;
+        }
+        body { 
+            background: var(--bg-dark); color: white; display: flex; 
+            justify-content: center; padding: 40px 20px; 
+            font-family: 'Noto Sans TC', sans-serif; min-height: 100vh;
+        }
+        .container { width: 100%; max-width: 450px; text-align: center; }
+        
+        .logo-main { font-size: 72px; font-weight: 900; background: linear-gradient(to right, #ffffff, var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-sub { font-size: 20px; color: var(--neon-pink); letter-spacing: 6px; margin-bottom: 40px; font-weight: 700; }
+        
+        /* 增加 margin 解決擁擠問題 */
+        input { 
+            width: 100%; padding: 20px; margin: 15px 0; border-radius: 12px; 
+            border: 1px solid #333; background: #172a45; color: white; 
+            font-size: 18px; text-align: center; box-sizing: border-box;
+        }
+        button { 
+            width: 100%; padding: 20px; margin-top: 30px; 
+            background: var(--neon-cyan); color: #000; border: none; 
+            border-radius: 12px; font-weight: bold; font-size: 20px; cursor: pointer; 
+        }
+
+        /* 查詢結果區 (初始為空) */
+        #result { margin-top: 40px; padding: 30px; border: 2px solid var(--neon-cyan); border-radius: 20px; display: none; background: rgba(255,255,255,0.05); }
+        .label { font-size: 18px; color: #cbd5e1; }
+        .count-num { font-size: 72px; color: var(--neon-cyan); font-weight: 900; margin: 10px 0; display: block; }
+        .expiry-date { color: var(--neon-pink); font-weight: bold; font-size: 28px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-main">MT</div>
+    <div class="logo-sub">DANCE STUDIO</div>
+    
+    <input type="text" id="name" placeholder="請輸入姓名">
+    <input type="number" id="phone" placeholder="請輸入手機末三碼">
+    <button id="btn" onclick="query()">查詢剩餘課程</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyNNNRJK1duf5WLOEk-8UL2Q1JzDLzOyDv2u8BQd8SbAkzNKGrQyXTYTom4CKlzUSD7XA/exec"; 
+
+    function sendJsonpRequest(url, callbackName) {
+        return new Promise((resolve) => {
+            window[callbackName] = (data) => {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                resolve(data);
+            };
+            const script = document.createElement('script');
+            script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${callbackName}`;
+            document.body.appendChild(script);
+        });
+    }
+
+    async function query() {
+        const btn = document.getElementById('btn');
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const resultDiv = document.getElementById('result');
+
+        if (!name || !phone) { alert("請填寫姓名與手機末三碼"); return; }
+
+        btn.innerText = "查詢中...";
+        btn.disabled = true;
+
+        try {
+            const url = `${GAS_API_URL}?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
+            const data = await sendJsonpRequest(url, "jsonp_" + Date.now());
+
+            if (data.status === "success") {
+                // 動態渲染 HTML：數字放大、日期標紅
+                resultDiv.innerHTML = `
+                    <div class="label">剩餘堂數</div>
+                    <div class="count-num">${data.remaining}</div>
+                    <div class="label">到期日期</div>
+                    <div class="expiry-date">${data.expiry}</div>
+                `;
+                resultDiv.style.display = 'block';
+            } else {
+                resultDiv.style.display = 'none';
+                alert("查無資料");
+            }
+        } catch (err) {
+            alert("連線失敗，請稍後再試");
+        } finally {
+            btn.innerText = "查詢剩餘課程";
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
