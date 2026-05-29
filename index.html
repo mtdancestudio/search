@@ -84,11 +84,11 @@
             const data = await sendJsonpRequest(url, "jsonp_" + Date.now());
 
             if (data.status === "success") {
-    // 檢查日期是否存在，若有則進行處理，沒有則設為空字串
-    let rawDate = data.expiry ? String(data.expiry) : "";
+    let rawDate = String(data.expiry);
     
-    // 如果包含 'T'，就切掉後面的部分；如果不包含，則顯示原樣
-    let cleanDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
+    // 使用 .replace()：把從 T 開始後面所有的東西都換成「空字串」
+    // 這個正規表示式 /T.*$/ 的意思是：找到 T 以及它後面所有的文字
+    let cleanDate = rawDate.replace(/T.*$/, "");
                 // 動態渲染 HTML：數字放大、日期標紅
                 resultDiv.innerHTML = `
                     <div class="label">剩餘堂數</div>
