@@ -91,12 +91,12 @@
     let cleanDate = rawDate.replace(/T.*$/, "");
                 // 動態渲染 HTML：數字放大、日期標紅
                 resultDiv.innerHTML = `
-                    <div class="label">剩餘堂數</div>
-                    <div class="count-num">${data.remaining}</div>
-                    <div class="label">到期日期</div>
-                    <div class="expiry-date">${data.expiry}</div>
-                `;
-                resultDiv.style.display = 'block';
+        <div class="label">剩餘堂數</div>
+        <div class="count-num">${data.remaining}</div>
+        <div class="label">到期日期</div>
+        <div class="expiry-date">${cleanDate}</div>
+    `;
+    resultDiv.style.display = 'block';
             } else {
                 resultDiv.style.display = 'none';
                 alert("查無資料");
